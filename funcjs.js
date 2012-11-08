@@ -6,41 +6,48 @@
  * Other callers waiting for the result.
  * @param {function} getter function(key, function(error, data))
  * @param {function} creator function(key, function(error))
+ * @param {function} hash function(key, function(error))
  * @returns {function}
  */    
-u.getOrCreate = function(getter, creator) {
+u.getOrCreate = function(getter, creator, hash) {
     var _queue = {};
 
-    function _w(successFunc, errorFunc) {
+    function _w(thiz, successFunc, errorFunc, args) {
         return function(error) {
-            if (error) { errorFunc(error); }
-            else successFunc();
+            if (error) errorFunc.call(thiz, error);
+            else successFunc.apply(thiz, args);
         };
     }
 
-    return function(key, cb) {
+    return function(key) {
+        var self = this;
+        if (hash) key = hash.apply(this, Array.prototype.slice.call(arguments, 0, arguments - 1));
+        var args = Array.prototype.slice.call(arguments);
+        var cb = arguments[arguments.length - 1];
+        
         if (key in _queue) {
-            _queue[key].push(_w(getter.bind(this, key, cb), cb));
+            _queue[key].push(_w(self, getter, cb, args));
 
         } else {
-            getter(key, function(error, data) {
+            var args2 = args.slice(0, arguments.length - 1);
+            getter.apply(self, args2.concat([function(error) {
                 if (error) {
                     if (key in _queue) {
-                        _queue[key].push(_w(getter.bind(this, key, cb), cb));
+                        _queue[key].push(_w(self, getter, cb, args));
 
                     } else {
-                        _queue[key] = [_w(getter.bind(this, key, cb), cb)];
-                        creator(key, function(error) {
+                        _queue[key] = [_w(self, getter, cb, args)];
+                        creator.apply(self, args2.concat([function(error) {
                             var funcs = _queue[key];
                             delete _queue[key];
                             funcs.forEach(function(f) { f(error); });
-                        });
+                        }]));
                     }
                     
                 } else {
                     cb.apply(this, arguments);
                 }
-            });
+            }]));
         }
     };
 };
