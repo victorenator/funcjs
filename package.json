@@ -17,12 +17,10 @@
         }
     ],
 
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/victorenator/funcjs.git" 
-        }
-    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/victorenator/funcjs.git" 
+    },
         
     "scripts": {
         "test": "vows test/*.js --isolate --spec"

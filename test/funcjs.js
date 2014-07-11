@@ -57,8 +57,8 @@ vows.describe('FuncJS')
     'When executes series multiargs': {
         topic: function() {
             async.series([
-                func2.bind(res, '1', {}),
-                func2.bind(res, '1', {})
+                func2.bind(res, '3', {}),
+                func2.bind(res, '3', {})
             ], this.callback);
         },
         'result is the same': function(res) {
@@ -68,8 +68,8 @@ vows.describe('FuncJS')
     'When executes parallel multiargs': {
         topic: function() {
             async.parallel([
-                func2.bind(res, '2', {}),
-                func2.bind(res, '2', {})
+                func2.bind(res, '4', {}),
+                func2.bind(res, '4', {})
             ], this.callback);
         },
         'result is the same': function(res) {
